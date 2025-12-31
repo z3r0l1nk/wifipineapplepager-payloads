@@ -102,8 +102,5 @@ LOG "=================================================="
 LOG "Portal URL: http://${PORTAL_IP}/"
 LOG "Portal files: ${PORTAL_DIR}/"
 LOG "Active via symlinks in: /www/"
-LOG ""
-LOG "To switch to Wordpress portal:"
-LOG "  Run the 'WordPress Portal' payload"
 LOG "=================================================="
 exit 0
