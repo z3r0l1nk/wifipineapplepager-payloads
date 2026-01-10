@@ -2,7 +2,6 @@
 # Title: DUMPY_REVERSE_DUCKY
 # Version: 1.5.1
 # Author: THENRGLABS
-
 # --- 1. CONFIG ---
 MOUNTPOINT="/mnt/usb"
 LOOT_DIR="/root/loot/DUMP_USB"
@@ -111,3 +110,4 @@ tar -cf "$LOOT_DIR/$ARCHIVE_NAME" -T "$SELECTED" 2>/dev/null
 
 LOG green "DUMP COMPLETE"
 exit 0
+
