@@ -31,6 +31,7 @@ type CONFIRMATION_DIALOG >/dev/null 2>&1 || CONFIRMATION_DIALOG() {
 # =============================================================================
 
 PAYLOAD_NAME="hashtopolis_manual_upload"
+LOG "Hashtopolis Upload - Starting payload."
 
 get_payload_config() {
     PAYLOAD_GET_CONFIG "$PAYLOAD_NAME" "$1" 2>/dev/null
@@ -169,6 +170,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
 fi
 
 source "$CONFIG_FILE"
+LOG "Hashtopolis Upload - Loaded config.sh."
 
 # Capture config.sh values for comparison without overwriting saved runtime config.
 CFG_HASHTOPOLIS_URL="$HASHTOPOLIS_URL"
@@ -184,9 +186,11 @@ HAS_SAVED_CONFIG=false
 
 if read_saved_config; then
     HAS_SAVED_CONFIG=true
+    LOG "Hashtopolis Upload - Found saved config."
     if config_is_sample "$CFG_HASHTOPOLIS_URL" "$CFG_API_KEY"; then
         # Offer to restore config.sh from saved config if the file looks reset.
         if CONFIRMATION_DIALOG "config.sh looks reset to sample values. Populate it from saved config?"; then
+            LOG "Hashtopolis Upload - Restoring config.sh from saved config."
             populate_config_from_saved
             CFG_HASHTOPOLIS_URL="$SAVED_HASHTOPOLIS_URL"
             CFG_API_KEY="$SAVED_API_KEY"
@@ -207,9 +211,11 @@ fi
 
 if [[ "$FORCE_CONFIG_UPDATE" == true ]]; then
     # Force an update from config.sh (still warn on sample placeholders).
+    LOG "Hashtopolis Upload - Forced config update enabled."
     if ! warn_if_sample_config; then
         exit 1
     fi
+    LOG "Hashtopolis Upload - Saving config.sh values to persistent config."
     if ! push_payload_config; then
         ERROR_DIALOG "Hashtopolis Upload - Failed to store config from config.sh. Check values."
         exit 1
@@ -225,11 +231,12 @@ elif [[ "$HAS_SAVED_CONFIG" == true ]]; then
             || [[ "$CFG_USE_BRAIN" != "$SAVED_USE_BRAIN" ]] \
             || [[ "$CFG_BRAIN_FEATURES" != "$SAVED_BRAIN_FEATURES" ]] \
             || [[ "$CFG_PRETASK_ID" != "$SAVED_PRETASK_ID" ]] \
-            || [[ "$CFG_CRACKER_VERSION_ID" != "$SAVED_CRACKER_VERSION_ID" ]]; }; then
+    || [[ "$CFG_CRACKER_VERSION_ID" != "$SAVED_CRACKER_VERSION_ID" ]]; }; then
         if CONFIRMATION_DIALOG "config.sh differs from saved config. Update saved config now?"; then
             if ! warn_if_sample_config; then
                 exit 1
             fi
+            LOG "Hashtopolis Upload - Updating saved config from config.sh."
             if ! push_payload_config; then
                 ERROR_DIALOG "Hashtopolis Upload - Failed to store config from config.sh. Check values."
                 exit 1
@@ -239,6 +246,7 @@ elif [[ "$HAS_SAVED_CONFIG" == true ]]; then
 fi
 
 if ! load_payload_config; then
+    LOG "Hashtopolis Upload - No saved config available."
     if CONFIRMATION_DIALOG "Hashtopolis config has not yet been saved. Pull and save from config.sh now?"; then
         if ! warn_if_sample_config; then
             exit 1
@@ -252,6 +260,7 @@ if ! load_payload_config; then
         BRAIN_FEATURES="$CFG_BRAIN_FEATURES"
         PRETASK_ID="$CFG_PRETASK_ID"
         CRACKER_VERSION_ID="$CFG_CRACKER_VERSION_ID"
+        LOG "Hashtopolis Upload - Saving config.sh values to persistent config."
         if ! push_payload_config; then
             ERROR_DIALOG "Hashtopolis Upload - Failed to store config from config.sh. Check values."
             exit 1
@@ -265,6 +274,7 @@ if ! load_payload_config; then
         exit 1
     fi
 fi
+LOG "Hashtopolis Upload - Loaded saved config."
 
 # =============================================================================
 # VALIDATE CONFIGURATION
@@ -294,6 +304,7 @@ fi
 # TEST SERVER CONNECTION
 # =============================================================================
 
+LOG "Hashtopolis Upload - Testing server connection."
 CONNECTION_TEST=$(curl -s -m 10 -X POST "$HASHTOPOLIS_URL" \
     -H "Content-Type: application/json" \
     -d '{"section":"test","request":"connection"}' 2>&1)
@@ -307,11 +318,13 @@ if ! echo "$CONNECTION_TEST" | jq -e '.response == "SUCCESS"' >/dev/null 2>&1; t
     ERROR_DIALOG "Hashtopolis Upload - Invalid API endpoint. Check HASHTOPOLIS_URL in config.sh."
     exit 1
 fi
+LOG "Hashtopolis Upload - Server connection OK."
 
 # =============================================================================
 # TEST API KEY AUTHENTICATION
 # =============================================================================
 
+LOG "Hashtopolis Upload - Testing API key authentication."
 AUTH_TEST=$(curl -s -m 10 -X POST "$HASHTOPOLIS_URL" \
     -H "Content-Type: application/json" \
     -d "{\"section\":\"test\",\"request\":\"access\",\"accessKey\":\"$API_KEY\"}" 2>&1)
@@ -326,6 +339,7 @@ if ! echo "$AUTH_TEST" | jq -e '.response == "OK"' >/dev/null 2>&1; then
     ERROR_DIALOG "Hashtopolis Upload - Invalid API key. Error: $AUTH_ERROR. Generate key in Users > API Management."
     exit 1
 fi
+LOG "Hashtopolis Upload - API key OK."
 
 # =============================================================================
 # PROCESS ALL HANDSHAKES IN DIRECTORY
@@ -337,6 +351,7 @@ if [[ ! -d "$HANDSHAKE_DIR" ]]; then
     ERROR_DIALOG "Hashtopolis Upload - Handshake directory not found: $HANDSHAKE_DIR"
     exit 1
 fi
+LOG "Hashtopolis Upload - Scanning handshakes in $HANDSHAKE_DIR."
 
 process_handshake_file() {
     local hashcat_path="$1"
