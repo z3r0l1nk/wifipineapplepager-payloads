@@ -28,7 +28,7 @@ case ${button} in
         LOG ""
 	PINEAPPLE_EXAMINE_CHANNEL $channel $seconds
 	    if [[ -z "$seconds" ]]; then
-		LOG "Now watching only channel $channel until reset."
+			LOG "Now watching only channel $channel until reset."
 	    else
 	        LOG "Now watching only channel $channel for $seconds seconds."
 	    fi
