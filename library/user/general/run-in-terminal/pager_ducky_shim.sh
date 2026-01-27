@@ -4,7 +4,7 @@
 
 # ---------- UI / LOGGING ----------
 LOG() {
-  echo "[*] $*"
+  echo -e "[*] $*"
 }
 
 ALERT() {
