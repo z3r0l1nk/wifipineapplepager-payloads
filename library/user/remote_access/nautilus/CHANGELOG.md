@@ -2,6 +2,14 @@
 
 All notable changes to Nautilus will be documented in this file.
 
+## [1.8.2] - 2026-01-30
+
+### Fixed
+
+- **Themes/Ringtones MERGED Tab**: Fixed GitHub repo structure detection (`themes/<name>/theme.json` and `ringtones/<name>.rtttl`)
+- **Dynamic Branch Selection**: Added per-resource branch config for GitHub API calls
+- **404 Error Handling**: Improved error message when GitHub repo doesn't exist
+
 ## [1.8.1] - 2026-01-30
 
 ### Fixed
