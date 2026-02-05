@@ -4,7 +4,7 @@
 # Description: Web-based payload launcher with live console output and GitHub integration
 # Author: JustSomeTrout (Trout / troot.)
 # Co-Author: Z3r0L1nk
-# Version: 1.8.3
+# Version: 1.8.5
 # Firmware: Developed for Firmware version 1.0.6
 #
 # Runs uhttpd with CGI to browse and execute payloads from your browser.
@@ -37,7 +37,7 @@ LOG "cyan" '|║║║╠═╣║-║-║-║║--║-║╚═╗|'
 LOG "cyan" '|╝╚╝╩-╩╚═╝-╩-╩╩═╝╚═╝╚═╝|'
 LOG "cyan" '+======================+'
 LOG ""
-LOG "v1.8.3"
+LOG "v1.8.5"
 LOG ""
 LOG "yellow" '|   ~ Web Payload Launcher ~    |'
 LOG ""
@@ -221,7 +221,7 @@ chmod +x "$SCRIPT_DIR/build_cache.sh" 2>/dev/null
 "$SCRIPT_DIR/build_cache.sh" >/dev/null 2>&1
 [ -f "$PID_FILE" ] && kill $(cat "$PID_FILE") 2>/dev/null
 rm -f "$PID_FILE"
-uhttpd -f -p "$PORT" -h "$WEB_DIR" -c /cgi-bin -T 60 &
+uhttpd -f -p "$PORT" -h "$WEB_DIR" -c /cgi-bin -t 300 -T 300 &
 echo $! > "$PID_FILE"
 echo $! > "$PID_FILE"
 sleep 1

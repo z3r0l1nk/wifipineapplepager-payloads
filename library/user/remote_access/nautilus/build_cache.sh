@@ -199,6 +199,64 @@ scan_ringtones() {
     '
 }
 
+# Function to scan loot files (any files in /root/loot)
+scan_loot() {
+    local root="$1"
+    
+    [ ! -d "$root" ] && { echo "{}"; return; }
+    
+    find "$root" -type f -print 2>/dev/null | \
+    awk -v root="$root" '
+    BEGIN { ORS="" }
+    {
+        file = $0
+        # Get relative path from root
+        relpath = file
+        sub("^" root "/?", "", relpath)
+        
+        # Get filename
+        n = split(file, parts, "/")
+        fname = parts[n]
+        
+        # Get directory (category) - use full subdirectory path
+        # e.g. /root/loot/wifi/passwords/file.txt -> category "wifi/passwords"
+        if (index(relpath, "/") > 0) {
+            # File is in subdirectory - use full dir path as category
+            category = relpath
+            sub("/[^/]*$", "", category)  # Remove filename to get dir path
+        } else {
+            # File is directly in loot root
+            category = "files"
+        }
+        
+        # Get file size
+        cmd = "stat -c %s \"" file "\" 2>/dev/null || stat -f %z \"" file "\" 2>/dev/null"
+        cmd | getline fsize
+        close(cmd)
+        if (fsize == "") fsize = "0"
+        
+        gsub(/[\t\r\n]/, " ", fname); gsub(/\\/, "\\\\", fname); gsub(/"/, "\\\"", fname)
+        gsub(/[\t\r\n]/, " ", relpath); gsub(/\\/, "\\\\", relpath); gsub(/"/, "\\\"", relpath)
+        
+        entry = "{\"name\":\"" fname "\",\"desc\":\"" relpath "\",\"author\":\"\",\"path\":\"" file "\",\"size\":" fsize "}"
+        if (category in cats) {
+            cats[category] = cats[category] "," entry
+        } else {
+            cats[category] = entry
+            catorder[++catcount] = category
+        }
+    }
+    END {
+        printf "{"
+        for (i = 1; i <= catcount; i++) {
+            if (i > 1) printf ","
+            printf "\"%s\":[%s]", catorder[i], cats[catorder[i]]
+        }
+        printf "}"
+    }
+    '
+}
+
 # Build combined cache with all resource types
 {
     echo -n '{"payloads":'
@@ -211,6 +269,8 @@ scan_ringtones() {
     scan_themes "/root/themes"
     echo -n ',"ringtones":'
     scan_ringtones "/root/ringtones"
+    echo -n ',"loot":'
+    scan_loot "/root/loot"
     echo -n '}'
 } > "$TMP"
 
